@@ -1,0 +1,16 @@
+name: Copilot-Quota-Watch
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+jobs:
+  quota_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Copilot Quota
+        run: |
+          used=$(gh api /user/copilot/usage | jq .premium_requests)
+          if [ "$used" -gt 400 ]; then
+            gh issue create -t "Copilot quota alert" -b "Used $used/500 today. Consider throttling workflows."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
